@@ -75,9 +75,42 @@ tailwind.config = {
   .screen::-webkit-scrollbar { display:none; }
   .screen { -ms-overflow-style:none; scrollbar-width:none; }
   .lang-btn { transition:all .2s; cursor:pointer; }
+  /* Splash screen */
+  #splash { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, #f3faff 0%, #e6f6ff 40%, #d5ecf8 100%); transition:opacity .5s ease, visibility .5s ease; }
+  #splash.hide { opacity:0; visibility:hidden; }
+  #splash .splash-icon { animation:splashPulse 2s ease-in-out infinite; }
+  @keyframes splashPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  @keyframes splashFadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .splash-title { animation:splashFadeUp .6s ease-out .2s both; }
+  .splash-sub { animation:splashFadeUp .6s ease-out .5s both; }
+  .splash-tap { animation:splashFadeUp .6s ease-out .8s both; }
+  /* Lang dropdown */
+  .lang-dropdown { position:absolute; top:100%; right:0; margin-top:4px; background:rgba(243,250,255,0.95); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border-radius:1rem; padding:8px; box-shadow:0 12px 40px rgba(7,30,39,0.12); display:none; min-width:140px; z-index:100; }
+  .lang-dropdown.open { display:block; animation:fadeIn .2s ease-out; }
+  .lang-dropdown button { display:flex; align-items:center; gap:8px; width:100%; padding:8px 12px; border-radius:0.75rem; font-size:13px; font-weight:500; transition:background .15s; }
+  .lang-dropdown button:hover { background:rgba(13,99,27,0.08); }
+  .lang-dropdown button.active { background:rgba(13,99,27,0.12); font-weight:700; }
 </style>
 </head>
 <body class="bg-surface text-on-surface overflow-hidden">
+
+<!-- ======== SPLASH SCREEN ======== -->
+<div id="splash" onclick="dismissSplash()">
+  <div class="flex flex-col items-center justify-center text-center px-8">
+    <div class="splash-icon w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center mb-8 shadow-xl">
+      <span class="material-symbols-outlined text-white" style="font-size:48px;font-variation-settings:'FILL' 1">eco</span>
+    </div>
+    <h1 class="splash-title font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-3">
+      Citizen Science<br><span class="text-primary">Explorer</span>
+    </h1>
+    <p class="splash-sub font-body text-sm text-on-surface-variant mb-12">Progetto ECO — Senigallia &amp; Chiampo</p>
+    <p class="splash-tap font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60" data-t="splash.tap">Tocca per iniziare</p>
+  </div>
+  <div class="absolute -top-32 -right-32 w-80 h-80 bg-primary/5 rounded-full blur-[80px]"></div>
+  <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-secondary/5 rounded-full blur-[80px]"></div>
+</div>
 
 <!-- ======== SCREEN 0: ONBOARDING ======== -->
 <div id="screen-onboarding" class="screen active">
@@ -90,11 +123,14 @@ tailwind.config = {
     <div class="relative z-10 w-full max-w-md flex flex-col items-center">
 
       <!-- Language Switcher -->
-      <div class="flex gap-2 mb-6 self-end" id="lang-switcher-onboarding">
-        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="it" onclick="setLang('it')">🇮🇹</button>
-        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="en" onclick="setLang('en')">🇬🇧</button>
-        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
-        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+      <div class="relative self-end mb-6">
+        <button onclick="toggleLangDropdown(this)" class="text-2xl p-2 rounded-full hover:bg-surface-container-high transition-colors" id="lang-globe-onb">🌍</button>
+        <div class="lang-dropdown">
+          <button onclick="setLang('it');closeLangDropdowns()" data-lang="it">🇮🇹 <span>Italiano</span></button>
+          <button onclick="setLang('en');closeLangDropdowns()" data-lang="en">🇬🇧 <span>English</span></button>
+          <button onclick="setLang('fr');closeLangDropdowns()" data-lang="fr">🇫🇷 <span>Français</span></button>
+          <button onclick="setLang('es');closeLangDropdowns()" data-lang="es">🇪🇸 <span>Español</span></button>
+        </div>
       </div>
 
       <!-- Hero -->
@@ -117,7 +153,7 @@ tailwind.config = {
           <span class="font-headline font-bold text-primary tracking-widest uppercase text-xs" data-t="onb.edition">Field Journal Edition</span>
         </div>
         <h1 class="font-headline text-4xl font-extrabold tracking-tight leading-[1.1] text-on-surface">
-          <span data-t="onb.welcome">Benvenuto su</span> <span class="text-primary italic" data-t="onb.brand">Scienza Attiva.</span>
+          <span data-t="onb.welcome">Benvenuto su</span><br><span class="text-primary italic">Citizen Science Explorer.</span>
         </h1>
         <p class="font-body text-base text-on-surface-variant leading-relaxed" data-t="onb.desc">
           Trasforma la tua curiosità in ricerca scientifica. Partecipa al progetto <strong>ECO</strong> per mappare la biodiversità del Parco della Cesanella e del Colle Cimatico.
@@ -193,15 +229,17 @@ tailwind.config = {
     <div class="flex justify-between items-center px-6 py-4">
       <div class="flex items-center gap-2">
         <span class="material-symbols-outlined text-primary filled">eco</span>
-        <h1 class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</h1>
+        <h1 class="text-sm font-extrabold text-primary tracking-tight font-headline leading-tight">Citizen Science<br>Explorer</h1>
       </div>
-      <div class="flex items-center gap-2">
-        <!-- Language switcher compact -->
-        <div class="flex gap-1 mr-1">
-          <button class="lang-btn text-xs px-1 rounded" data-lang="it" onclick="setLang('it')">🇮🇹</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="en" onclick="setLang('en')">🇬🇧</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+      <div class="flex items-center gap-1">
+        <div class="relative">
+          <button onclick="toggleLangDropdown(this)" class="text-xl p-2 rounded-full hover:bg-surface-container-high transition-colors" id="lang-globe-disc">🌍</button>
+          <div class="lang-dropdown">
+            <button onclick="setLang('it');closeLangDropdowns()" data-lang="it">🇮🇹 <span>Italiano</span></button>
+            <button onclick="setLang('en');closeLangDropdowns()" data-lang="en">🇬🇧 <span>English</span></button>
+            <button onclick="setLang('fr');closeLangDropdowns()" data-lang="fr">🇫🇷 <span>Français</span></button>
+            <button onclick="setLang('es');closeLangDropdowns()" data-lang="es">🇪🇸 <span>Español</span></button>
+          </div>
         </div>
         <button onclick="showScreen('screen-guide')" class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high transition-colors">menu_book</button>
       </div>
@@ -299,13 +337,59 @@ tailwind.config = {
         </div>
       </section>
 
+      <!-- Research Article -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 mt-2">
+          <span class="material-symbols-outlined text-secondary text-lg">science</span>
+          <h3 class="font-headline font-bold text-lg" data-t="disc.research_section">Ricerca del Progetto</h3>
+        </div>
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10">
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[10px] font-bold uppercase tracking-wider" data-t="disc.paper_tag">Articolo Scientifico</span>
+            <span class="text-[10px] text-on-surface-variant">2025 • Open Access</span>
+          </div>
+          <h3 class="font-headline font-bold text-base mb-2 leading-snug" data-t="disc.paper_title">Citizen Science e Pecore: Sensibilizzare i Giovani alla Biodiversità</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-3" data-t="disc.paper_desc">Studio su 252 studenti (9–11 anni) che utilizza le pecore come modello animale per esplorare biodiversità, benessere animale e utilità sociale della ricerca attraverso attività di Citizen Science.</p>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="px-2 py-0.5 rounded-full bg-surface-container-low text-[9px] text-on-surface-variant font-medium">Biodiversità</span>
+            <span class="px-2 py-0.5 rounded-full bg-surface-container-low text-[9px] text-on-surface-variant font-medium">Citizen Science</span>
+            <span class="px-2 py-0.5 rounded-full bg-surface-container-low text-[9px] text-on-surface-variant font-medium" data-t="disc.paper_kw3">Benessere Animale</span>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-3 mb-3">
+            <div class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-primary text-sm mt-0.5">person</span>
+              <div>
+                <p class="text-xs font-bold text-on-surface">Paola Scocco <span class="font-normal text-on-surface-variant">et al.</span></p>
+                <p class="text-[10px] text-on-surface-variant">Università di Camerino — School of Biosciences and Veterinary Medicine</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary text-sm">menu_book</span>
+              <span class="text-[10px] text-on-surface-variant italic">Animals 2025, 15, 201</span>
+            </div>
+            <a href="https://doi.org/10.3390/ani15020201" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-br from-secondary to-secondary/80 text-white text-[10px] font-bold uppercase tracking-wider active:scale-95 transition-transform">
+              <span data-t="disc.paper_cta">Leggi</span>
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       <!-- Guida -->
       <section class="bg-inverse-surface text-inverse-on-surface rounded-3xl p-6 relative overflow-hidden">
         <div class="relative z-10 flex flex-col space-y-3">
           <p class="font-label text-[10px] uppercase tracking-widest opacity-60" data-t="disc.guide_label">Risorsa ECO</p>
           <h4 class="font-headline font-bold text-xl" data-t="disc.guide_title">Guida Galattica alla Biodiversità</h4>
           <p class="font-body text-sm opacity-80 leading-relaxed" data-t="disc.guide_desc">Percorsi e strategie per comprendere la biodiversità.</p>
-          <button onclick="showScreen('screen-guide')" class="bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-6 font-label uppercase tracking-widest text-xs font-bold w-fit active:scale-95 transition-transform" data-t="disc.guide_cta">Scopri di Più</button>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="showScreen('screen-guide')" class="bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-6 font-label uppercase tracking-widest text-xs font-bold w-fit active:scale-95 transition-transform" data-t="disc.guide_cta">Scopri di Più</button>
+            <a href="guida-galattica-biodiversita.pdf" download class="flex items-center gap-2 bg-white/15 backdrop-blur-sm text-inverse-on-surface rounded-xl py-3 px-5 font-label uppercase tracking-widest text-xs font-bold w-fit active:scale-95 transition-transform border border-white/20">
+              <span class="material-symbols-outlined text-sm">download</span>
+              <span data-t="disc.guide_download">Scarica PDF</span>
+            </a>
+          </div>
         </div>
         <div class="absolute -right-4 -top-4 w-40 h-40 opacity-20">
           <span class="material-symbols-outlined" style="font-size:160px">auto_stories</span>
@@ -323,7 +407,7 @@ tailwind.config = {
         <button onclick="navigateTo('screen-discovery')" class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">arrow_back</button>
         <h1 class="font-headline font-bold tracking-tight text-on-surface text-xl" data-t="rec.new">Nuova Osservazione</h1>
       </div>
-      <span class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</span>
+      <span class="text-sm font-extrabold text-primary tracking-tight font-headline leading-tight">Citizen Science Explorer</span>
     </div>
     <div class="bg-surface-container-low h-[2px] w-full"></div>
   </header>
@@ -449,14 +533,17 @@ tailwind.config = {
     <div class="flex justify-between items-center px-6 py-4">
       <div class="flex items-center gap-2">
         <span class="material-symbols-outlined text-primary">menu</span>
-        <h1 class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</h1>
+        <h1 class="text-sm font-extrabold text-primary tracking-tight font-headline leading-tight">Citizen Science<br>Explorer</h1>
       </div>
-      <div class="flex items-center gap-2">
-        <div class="flex gap-1 mr-1">
-          <button class="lang-btn text-xs px-1 rounded" data-lang="it" onclick="setLang('it')">🇮🇹</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="en" onclick="setLang('en')">🇬🇧</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
-          <button class="lang-btn text-xs px-1 rounded" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+      <div class="flex items-center gap-1">
+        <div class="relative">
+          <button onclick="toggleLangDropdown(this)" class="text-xl p-2 rounded-full hover:bg-surface-container-high transition-colors" id="lang-globe-impact">🌍</button>
+          <div class="lang-dropdown">
+            <button onclick="setLang('it');closeLangDropdowns()" data-lang="it">🇮🇹 <span>Italiano</span></button>
+            <button onclick="setLang('en');closeLangDropdowns()" data-lang="en">🇬🇧 <span>English</span></button>
+            <button onclick="setLang('fr');closeLangDropdowns()" data-lang="fr">🇫🇷 <span>Français</span></button>
+            <button onclick="setLang('es');closeLangDropdowns()" data-lang="es">🇪🇸 <span>Español</span></button>
+          </div>
         </div>
         <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
           <span class="material-symbols-outlined text-white text-sm filled">person</span>
@@ -596,6 +683,10 @@ tailwind.config = {
         <p class="font-label text-[11px] font-medium uppercase tracking-widest text-primary" data-t="guide.label">Progetto ECO</p>
         <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface" data-t="guide.main_title">Guida Galattica alla Biodiversità</h2>
         <p class="text-on-surface-variant text-sm leading-relaxed" data-t="guide.main_desc">Percorsi e strategie per comprendere e salvaguardare la biodiversità.</p>
+        <a href="guida-galattica-biodiversita.pdf" download class="inline-flex items-center gap-2 mt-2 px-5 py-3 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-label uppercase tracking-widest text-xs font-bold active:scale-95 transition-transform shadow-lg">
+          <span class="material-symbols-outlined text-sm">download</span>
+          <span data-t="guide.download">Scarica la Guida Completa (PDF)</span>
+        </a>
       </section>
 
       <section class="space-y-3">
@@ -763,6 +854,36 @@ function startExploring() {
   saveState();
   navigateTo('screen-discovery');
 }
+
+// Splash screen
+function dismissSplash() {
+  const splash = document.getElementById('splash');
+  if (splash) { splash.classList.add('hide'); setTimeout(() => splash.remove(), 600); }
+}
+
+// Language dropdown
+function toggleLangDropdown(btn) {
+  const dd = btn.parentElement.querySelector('.lang-dropdown');
+  const wasOpen = dd.classList.contains('open');
+  closeLangDropdowns();
+  if (!wasOpen) {
+    dd.classList.add('open');
+    updateLangDropdownActive();
+  }
+}
+function closeLangDropdowns() {
+  document.querySelectorAll('.lang-dropdown.open').forEach(d => d.classList.remove('open'));
+}
+function updateLangDropdownActive() {
+  const lang = localStorage.getItem('cse-lang') || 'it';
+  document.querySelectorAll('.lang-dropdown button[data-lang]').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+  });
+}
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.lang-dropdown') && !e.target.closest('[id^="lang-globe"]')) closeLangDropdowns();
+});
 
 // =============================================
 // RECORD

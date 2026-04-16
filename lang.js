@@ -11,6 +11,12 @@ const LANGS = {
 };
 
 const T = {
+  // ---- SPLASH ----
+  'splash.tap': {
+    it: 'Tocca per iniziare', en: 'Tap to start',
+    fr: 'Appuyez pour commencer', es: 'Toca para empezar'
+  },
+
   // ---- ONBOARDING ----
   'onb.badge': {
     it: 'Lab-Grade Discovery', en: 'Lab-Grade Discovery',
@@ -180,6 +186,30 @@ const T = {
     it: 'Entrambi i territori', en: 'Both territories',
     fr: 'Les deux territoires', es: 'Ambos territorios'
   },
+  'disc.research_section': {
+    it: 'Ricerca del Progetto', en: 'Project Research', fr: 'Recherche du Projet', es: 'Investigación del Proyecto'
+  },
+  'disc.paper_tag': {
+    it: 'Articolo Scientifico', en: 'Research Paper', fr: 'Article Scientifique', es: 'Artículo Científico'
+  },
+  'disc.paper_title': {
+    it: 'Citizen Science e Pecore: Sensibilizzare i Giovani alla Biodiversità',
+    en: 'Citizen Science & Sheep: Sensitizing Young Citizens to Biodiversity',
+    fr: 'Science Citoyenne et Moutons : Sensibiliser les Jeunes à la Biodiversité',
+    es: 'Ciencia Ciudadana y Ovejas: Sensibilizar a los Jóvenes sobre la Biodiversidad'
+  },
+  'disc.paper_desc': {
+    it: 'Studio su 252 studenti (9–11 anni) che utilizza le pecore come modello animale per esplorare biodiversità, benessere animale e utilità sociale della ricerca attraverso attività di Citizen Science.',
+    en: 'Study involving 252 students (aged 9–11) using sheep as an animal model to explore biodiversity, animal welfare and the social utility of research through Citizen Science activities.',
+    fr: 'Étude impliquant 252 élèves (9–11 ans) utilisant les moutons comme modèle animal pour explorer la biodiversité, le bien-être animal et l\'utilité sociale de la recherche à travers des activités de Science Citoyenne.',
+    es: 'Estudio con 252 estudiantes (9–11 años) que utiliza las ovejas como modelo animal para explorar biodiversidad, bienestar animal y la utilidad social de la investigación a través de actividades de Ciencia Ciudadana.'
+  },
+  'disc.paper_kw3': {
+    it: 'Benessere Animale', en: 'Animal Welfare', fr: 'Bien-être Animal', es: 'Bienestar Animal'
+  },
+  'disc.paper_cta': {
+    it: 'Leggi', en: 'Read', fr: 'Lire', es: 'Leer'
+  },
   'disc.guide_label': {
     it: 'Risorsa ECO', en: 'ECO Resource', fr: 'Ressource ECO', es: 'Recurso ECO'
   },
@@ -195,6 +225,9 @@ const T = {
   },
   'disc.guide_cta': {
     it: 'Scopri di Più', en: 'Learn More', fr: 'En Savoir Plus', es: 'Descubre Más'
+  },
+  'disc.guide_download': {
+    it: 'Scarica PDF', en: 'Download PDF', fr: 'Télécharger PDF', es: 'Descargar PDF'
   },
 
   // ---- RECORD ----
@@ -390,6 +423,10 @@ const T = {
     en: 'Pathways and strategies to understand and protect biodiversity. Inspired by the principles of the Biodiversity Education Charter.',
     fr: 'Parcours et stratégies pour comprendre et sauvegarder la biodiversité. Inspiré par les principes de la Charte pour l\'éducation à la Biodiversité.',
     es: 'Rutas y estrategias para comprender y salvaguardar la biodiversidad. Inspirada en los principios de la Carta para la Educación en Biodiversidad.'
+  },
+  'guide.download': {
+    it: 'Scarica la Guida Completa (PDF)', en: 'Download Full Guide (PDF)',
+    fr: 'Télécharger le Guide Complet (PDF)', es: 'Descargar la Guía Completa (PDF)'
   },
   'guide.sheets': {
     it: 'Schede Didattiche', en: 'Educational Sheets',
