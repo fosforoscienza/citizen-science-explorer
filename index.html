@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="theme-color" content="#f3faff" />
+<title>Citizen Science Explorer — ECO</title>
+<meta name="description" content="Citizen Science Explorer — Progetto ECO" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+<link rel="manifest" href="manifest.json" />
+<script src="lang.js"></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary-container":"#986200","outline-variant":"#bfcaba","surface-container-high":"#d5ecf8",
+        "error-container":"#ffdad6","surface-tint":"#1b6d24","on-primary-fixed":"#002204",
+        "inverse-on-surface":"#dff4ff","surface-container-low":"#e6f6ff","tertiary-fixed-dim":"#ffb957",
+        "on-tertiary-fixed":"#2a1800","on-surface-variant":"#40493d","secondary-fixed":"#cfe5ff",
+        "surface-dim":"#c7dde9","on-primary-container":"#cbffc2","secondary":"#00629e",
+        "surface-container":"#dbf1fe","surface-bright":"#f3faff","tertiary-fixed":"#ffddb5",
+        "on-primary":"#ffffff","secondary-fixed-dim":"#99cbff","on-surface":"#071e27",
+        "on-primary-fixed-variant":"#005312","surface-container-lowest":"#ffffff",
+        "inverse-surface":"#1e333c","on-background":"#071e27","primary-fixed":"#a3f69c",
+        "error":"#ba1a1a","on-secondary-container":"#004470","on-error":"#ffffff",
+        "on-tertiary-container":"#ffeede","primary-container":"#2e7d32","on-error-container":"#93000a",
+        "surface-container-highest":"#cfe6f2","on-secondary-fixed-variant":"#004a78",
+        "surface":"#f3faff","inverse-primary":"#88d982","background":"#f3faff",
+        "secondary-container":"#62b4fe","primary":"#0d631b","outline":"#707a6c",
+        "on-secondary-fixed":"#001d34","primary-fixed-dim":"#88d982",
+        "on-tertiary-fixed-variant":"#643f00","surface-variant":"#cfe6f2",
+        "tertiary":"#774c00","on-secondary":"#ffffff","on-tertiary":"#ffffff"
+      },
+      borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+      fontFamily: {
+        headline:["Manrope","system-ui","sans-serif"],
+        body:["Inter","system-ui","sans-serif"],
+        label:["Inter","system-ui","sans-serif"]
+      }
+    }
+  }
+};
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .material-symbols-outlined.filled { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+  html,body { height:100%; overflow:hidden; -webkit-tap-highlight-color:transparent; }
+  body { background-color:#f3faff; font-family:'Inter',system-ui,sans-serif; }
+  .leaf-shape { border-radius:0 1.5rem 0 1.5rem; }
+  .asymmetric-leaf { border-top-right-radius:4rem; border-bottom-left-radius:4rem; }
+  .glass-panel { background:rgba(243,250,255,0.7); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+  .observation-shell { background-image:radial-gradient(circle at 2px 2px,rgba(13,99,27,0.04) 1px,transparent 0); background-size:32px 32px; }
+  .screen { display:none; height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .screen.active { display:block; }
+  .fade-in { animation:fadeIn .3s ease-out; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .chart-bar { transition:height .6s cubic-bezier(.16,1,.3,1); }
+  input[type="file"] { display:none; }
+  .toast { animation:toastIn .3s ease-out, toastOut .3s ease-in 2.5s forwards; }
+  @keyframes toastIn { from{opacity:0;transform:translateY(20px) translateX(-50%)} to{opacity:1;transform:translateY(0) translateX(-50%)} }
+  @keyframes toastOut { from{opacity:1;transform:translateY(0) translateX(-50%)} to{opacity:0;transform:translateY(-20px) translateX(-50%)} }
+  .screen::-webkit-scrollbar { display:none; }
+  .screen { -ms-overflow-style:none; scrollbar-width:none; }
+  .lang-btn { transition:all .2s; cursor:pointer; }
+</style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+
+<!-- ======== SCREEN 0: ONBOARDING ======== -->
+<div id="screen-onboarding" class="screen active">
+  <main class="relative min-h-screen flex flex-col items-center justify-start pt-10 pb-8 px-6 overflow-y-auto">
+    <div class="absolute inset-0 z-0">
+      <div class="absolute inset-0 bg-gradient-to-b from-primary/10 via-surface/60 to-surface"></div>
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-container/10 rounded-full blur-[100px]"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary-container/10 rounded-full blur-[100px]"></div>
+    </div>
+    <div class="relative z-10 w-full max-w-md flex flex-col items-center">
+
+      <!-- Language Switcher -->
+      <div class="flex gap-2 mb-6 self-end" id="lang-switcher-onboarding">
+        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="it" onclick="setLang('it')">🇮🇹</button>
+        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="en" onclick="setLang('en')">🇬🇧</button>
+        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
+        <button class="lang-btn text-lg px-2 py-1 rounded-lg" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+      </div>
+
+      <!-- Hero -->
+      <div class="w-full aspect-square max-w-[260px] asymmetric-leaf overflow-hidden shadow-2xl shadow-on-surface/10 mb-8">
+        <div class="w-full h-full bg-gradient-to-br from-primary/20 via-primary-container/30 to-secondary/20 flex items-center justify-center">
+          <div class="text-center">
+            <span class="material-symbols-outlined text-primary" style="font-size:72px;font-variation-settings:'FILL' 1">nature_people</span>
+            <div class="mt-2 glass-panel px-4 py-2 rounded-full inline-flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm filled">biotech</span>
+              <span class="font-label text-[10px] uppercase tracking-[0.1em] font-bold text-primary" data-t="onb.badge">Lab-Grade Discovery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="w-full space-y-4 mb-8">
+        <div class="flex items-center gap-2">
+          <span class="w-12 h-[2px] bg-primary"></span>
+          <span class="font-headline font-bold text-primary tracking-widest uppercase text-xs" data-t="onb.edition">Field Journal Edition</span>
+        </div>
+        <h1 class="font-headline text-4xl font-extrabold tracking-tight leading-[1.1] text-on-surface">
+          <span data-t="onb.welcome">Benvenuto su</span> <span class="text-primary italic" data-t="onb.brand">Scienza Attiva.</span>
+        </h1>
+        <p class="font-body text-base text-on-surface-variant leading-relaxed" data-t="onb.desc">
+          Trasforma la tua curiosità in ricerca scientifica. Partecipa al progetto <strong>ECO</strong> per mappare la biodiversità del Parco della Cesanella e del Colle Cimatico.
+        </p>
+      </div>
+
+      <!-- CTA -->
+      <button onclick="startExploring()" class="group w-full relative px-8 py-5 bg-gradient-to-br from-primary to-primary-container rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 overflow-hidden active:scale-95 mb-6">
+        <div class="relative z-10 flex items-center justify-center gap-3">
+          <span class="font-label text-sm font-bold uppercase tracking-[0.1em] text-white" data-t="onb.cta">Inizia la Scoperta</span>
+          <span class="material-symbols-outlined text-white">arrow_forward</span>
+        </div>
+      </button>
+
+      <!-- Value Props -->
+      <div class="grid grid-cols-2 gap-3 w-full mb-8">
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary mb-2">map</span>
+          <h3 class="font-headline font-bold text-sm" data-t="onb.explore_title">Esplora il Territorio</h3>
+          <p class="font-body text-[11px] text-on-surface-variant mt-1" data-t="onb.explore_desc">Trova missioni di Citizen Science attive vicino a te.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/10">
+          <span class="material-symbols-outlined text-tertiary mb-2">groups</span>
+          <h3 class="font-headline font-bold text-sm" data-t="onb.community_title">Comunità Attiva</h3>
+          <p class="font-body text-[11px] text-on-surface-variant mt-1" data-t="onb.community_desc">Condividi scoperte con la Comunità di Pratica ECO.</p>
+        </div>
+      </div>
+
+      <!-- ECO Project -->
+      <div class="w-full space-y-3 mb-8">
+        <h2 class="font-headline font-bold text-lg tracking-tight" data-t="onb.project_title">Il Progetto ECO</h2>
+        <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10">
+          <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-primary filled mt-0.5">park</span>
+            <div>
+              <h4 class="font-headline font-bold text-sm" data-t="onb.project_subtitle">Ecosistema di Comunità = Opportunità</h4>
+              <p class="text-xs text-on-surface-variant mt-1 leading-relaxed" data-t="onb.project_desc">Un progetto partecipativo tra Senigallia e Chiampo per contrastare la perdita di biodiversità.</p>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10">
+            <span class="material-symbols-outlined text-primary-container mb-1">forest</span>
+            <p class="font-headline font-bold text-xs">Parco Cesanella</p>
+            <p class="text-[10px] text-on-surface-variant" data-t="onb.cesanella">Senigallia — 12 ettari</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10">
+            <span class="material-symbols-outlined text-secondary mb-1">landscape</span>
+            <p class="font-headline font-bold text-xs">Colle Cimatico</p>
+            <p class="text-[10px] text-on-surface-variant" data-t="onb.cimatico">Chiampo — 10.580 m²</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Citizen Science -->
+      <div class="w-full bg-inverse-surface text-inverse-on-surface rounded-3xl p-6 relative overflow-hidden mb-6">
+        <div class="relative z-10">
+          <p class="font-label text-[10px] uppercase tracking-widest opacity-60 mb-2" data-t="onb.cs_label">Cos'è la Citizen Science</p>
+          <h3 class="font-headline font-bold text-xl mb-3" data-t="onb.cs_title">Scienza dei Cittadini</h3>
+          <p class="font-body text-sm opacity-80 leading-relaxed" data-t="onb.cs_desc">La Citizen Science coinvolge la comunità nella raccolta, analisi e categorizzazione di dati scientifici.</p>
+        </div>
+        <div class="absolute -right-4 -top-4 w-32 h-32 opacity-10">
+          <span class="material-symbols-outlined" style="font-size:128px">science</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ======== SCREEN 1: DISCOVERY ======== -->
+<div id="screen-discovery" class="screen">
+  <header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-3xl">
+    <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary filled">eco</span>
+        <h1 class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- Language switcher compact -->
+        <div class="flex gap-1 mr-1">
+          <button class="lang-btn text-xs px-1 rounded" data-lang="it" onclick="setLang('it')">🇮🇹</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="en" onclick="setLang('en')">🇬🇧</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+        </div>
+        <button onclick="showScreen('screen-guide')" class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high transition-colors">menu_book</button>
+      </div>
+    </div>
+    <div class="bg-surface-container-low h-[2px] w-full"></div>
+  </header>
+
+  <main class="pt-20 pb-28 px-5 max-w-lg mx-auto observation-shell">
+    <div class="space-y-6 fade-in">
+      <section class="space-y-2">
+        <p class="font-label text-[11px] font-medium uppercase tracking-widest text-primary" data-t="disc.explore">Esplora</p>
+        <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface" data-t="disc.missions">Missioni Attive</h2>
+        <p class="text-on-surface-variant text-sm" data-t="disc.missions_desc">Partecipa alle attività di Citizen Science del progetto ECO.</p>
+      </section>
+
+      <section class="space-y-4">
+        <!-- Mission 1 -->
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10 cursor-pointer active:scale-[0.98] transition-transform" onclick="navigateTo('screen-record')">
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[10px] font-bold uppercase tracking-wider" data-t="disc.m1_tag">BioBlitz</span>
+            <span class="text-[10px] text-on-surface-variant" data-t="disc.m1_deadline">Scad. 30 Giu</span>
+          </div>
+          <h3 class="font-headline font-bold text-base mb-1" data-t="disc.m1_title">Censimento Flora Primaverile</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-3" data-t="disc.m1_desc">Documenta le specie vegetali nel Parco della Cesanella.</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+              <span class="text-[11px] text-on-surface-variant">Parco Cesanella, Senigallia</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary text-sm filled">group</span>
+              <span class="text-[11px] font-bold text-primary">23</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission 2 -->
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10 cursor-pointer active:scale-[0.98] transition-transform" onclick="navigateTo('screen-record')">
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-bold uppercase tracking-wider" data-t="disc.m2_tag">Impollinatori</span>
+            <span class="text-[10px] text-on-surface-variant" data-t="disc.m2_status">In corso</span>
+          </div>
+          <h3 class="font-headline font-bold text-base mb-1" data-t="disc.m2_title">Monitoraggio Impollinatori</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-3" data-t="disc.m2_desc">Osserva e registra api, farfalle e altri impollinatori.</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+              <span class="text-[11px] text-on-surface-variant">Colle Cimatico, Chiampo</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-tertiary text-sm filled">group</span>
+              <span class="text-[11px] font-bold text-tertiary">14</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission 3 -->
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10 cursor-pointer active:scale-[0.98] transition-transform" onclick="navigateTo('screen-record')">
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[10px] font-bold uppercase tracking-wider" data-t="disc.m3_tag">Risorse Idriche</span>
+            <span class="text-[10px] text-on-surface-variant" data-t="disc.m3_status">Stagionale</span>
+          </div>
+          <h3 class="font-headline font-bold text-base mb-1" data-t="disc.m3_title">Torrente Chiampo: Stato di Salute</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-3" data-t="disc.m3_desc">Documenta lo stato del torrente Chiampo.</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+              <span class="text-[11px] text-on-surface-variant">Valle del Chiampo, Vicenza</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-secondary text-sm filled">group</span>
+              <span class="text-[11px] font-bold text-secondary">8</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mission 4 -->
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10 cursor-pointer active:scale-[0.98] transition-transform" onclick="navigateTo('screen-record')">
+          <div class="flex items-start justify-between mb-3">
+            <span class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[10px] font-bold uppercase tracking-wider" data-t="disc.m4_tag">Micologia</span>
+            <span class="text-[10px] text-on-surface-variant" data-t="disc.m4_status">Autunno</span>
+          </div>
+          <h3 class="font-headline font-bold text-base mb-1" data-t="disc.m4_title">Censimento Funghi del Bosco</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed mb-3" data-t="disc.m4_desc">Identifica e cataloga le specie fungine.</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+              <span class="text-[11px] text-on-surface-variant" data-t="disc.m4_loc">Entrambi i territori</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary text-sm filled">group</span>
+              <span class="text-[11px] font-bold text-primary">31</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Guida -->
+      <section class="bg-inverse-surface text-inverse-on-surface rounded-3xl p-6 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col space-y-3">
+          <p class="font-label text-[10px] uppercase tracking-widest opacity-60" data-t="disc.guide_label">Risorsa ECO</p>
+          <h4 class="font-headline font-bold text-xl" data-t="disc.guide_title">Guida Galattica alla Biodiversità</h4>
+          <p class="font-body text-sm opacity-80 leading-relaxed" data-t="disc.guide_desc">Percorsi e strategie per comprendere la biodiversità.</p>
+          <button onclick="showScreen('screen-guide')" class="bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-6 font-label uppercase tracking-widest text-xs font-bold w-fit active:scale-95 transition-transform" data-t="disc.guide_cta">Scopri di Più</button>
+        </div>
+        <div class="absolute -right-4 -top-4 w-40 h-40 opacity-20">
+          <span class="material-symbols-outlined" style="font-size:160px">auto_stories</span>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ======== SCREEN 2: RECORD ======== -->
+<div id="screen-record" class="screen">
+  <header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-3xl">
+    <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex items-center gap-4">
+        <button onclick="navigateTo('screen-discovery')" class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">arrow_back</button>
+        <h1 class="font-headline font-bold tracking-tight text-on-surface text-xl" data-t="rec.new">Nuova Osservazione</h1>
+      </div>
+      <span class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</span>
+    </div>
+    <div class="bg-surface-container-low h-[2px] w-full"></div>
+  </header>
+
+  <main class="pt-20 pb-28 px-5 max-w-lg mx-auto observation-shell">
+    <div class="space-y-7 fade-in">
+      <section class="space-y-2">
+        <p class="font-label text-[11px] font-medium uppercase tracking-widest text-primary" data-t="rec.label">Raccolta Dati</p>
+        <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface" data-t="rec.title">Registra Osservazione</h2>
+        <p class="text-on-surface-variant text-sm leading-relaxed" data-t="rec.desc">Documenta la tua scoperta per contribuire alla mappatura della biodiversità.</p>
+      </section>
+
+      <!-- Type -->
+      <section class="space-y-3">
+        <label class="font-headline font-semibold text-on-surface block" data-t="rec.type_label">Tipo di Osservazione</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="obs-type-btn active flex flex-col items-center gap-1.5 p-3 rounded-xl bg-primary/10 border-2 border-primary/30 transition-all" data-type="flora" onclick="selectObsType(this)">
+            <span class="material-symbols-outlined text-primary filled">park</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-primary" data-t="rec.flora">Flora</span>
+          </button>
+          <button class="obs-type-btn flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container-lowest border-2 border-outline-variant/20 transition-all" data-type="fauna" onclick="selectObsType(this)">
+            <span class="material-symbols-outlined text-on-surface-variant">pets</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.fauna">Fauna</span>
+          </button>
+          <button class="obs-type-btn flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container-lowest border-2 border-outline-variant/20 transition-all" data-type="habitat" onclick="selectObsType(this)">
+            <span class="material-symbols-outlined text-on-surface-variant">landscape</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.habitat">Habitat</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Photo -->
+      <section class="space-y-3">
+        <label class="font-headline font-semibold text-on-surface block" data-t="rec.evidence">Evidenza Visiva</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="relative aspect-square rounded-tr-[2rem] rounded-bl-[2rem] bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center group cursor-pointer hover:bg-surface-container-low transition-colors overflow-hidden">
+            <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(event)" />
+            <span class="material-symbols-outlined text-4xl text-primary mb-2 filled">photo_camera</span>
+            <span class="font-label text-sm font-semibold text-primary" data-t="rec.capture">Scatta Foto</span>
+            <div id="photo-preview" class="absolute inset-0 hidden">
+              <img id="photo-img" class="w-full h-full object-cover" alt="" />
+              <div class="absolute top-2 right-2 bg-primary text-white p-1 rounded-full">
+                <span class="material-symbols-outlined text-sm filled">check_circle</span>
+              </div>
+            </div>
+          </label>
+          <label class="aspect-square rounded-tr-[2rem] rounded-bl-[2rem] bg-surface-container-lowest border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center group cursor-pointer hover:bg-surface-container-low transition-colors">
+            <input type="file" accept="image/*" onchange="handlePhoto(event)" />
+            <span class="material-symbols-outlined text-4xl text-outline-variant mb-2">upload_file</span>
+            <span class="font-label text-sm font-semibold text-on-surface-variant" data-t="rec.upload">Carica File</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Species -->
+      <section class="space-y-3">
+        <label class="font-headline font-semibold text-on-surface block" for="species-input"><span data-t="rec.species">Nome Specie</span> <span class="text-xs font-normal text-on-surface-variant" data-t="rec.species_hint">(se conosciuta)</span></label>
+        <input id="species-input" type="text" data-t="rec.species_placeholder" data-t-attr="placeholder" placeholder="Es. Quercus pubescens, Papilio machaon..." class="w-full bg-surface-container-lowest border-none rounded-xl p-4 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 transition-all font-body" />
+      </section>
+
+      <!-- Location -->
+      <section class="space-y-3">
+        <div class="flex justify-between items-end">
+          <label class="font-headline font-semibold text-on-surface" data-t="rec.location">Località</label>
+          <button onclick="getLocation()" class="font-label text-[10px] text-primary font-bold uppercase tracking-tighter flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">my_location</span>
+            <span data-t="rec.autodetect">Auto-rileva</span>
+          </button>
+        </div>
+        <div class="rounded-tr-[2rem] rounded-bl-[2rem] bg-surface-container-low overflow-hidden relative shadow-inner h-40">
+          <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center">
+            <div id="location-placeholder" class="text-center">
+              <div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span class="material-symbols-outlined text-primary text-2xl filled">location_on</span>
+              </div>
+              <p class="text-xs text-on-surface-variant" data-t="rec.location_hint">Tocca "Auto-rileva" per la posizione</p>
+            </div>
+            <div id="location-found" class="hidden text-center">
+              <div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2 animate-pulse">
+                <span class="material-symbols-outlined text-primary text-2xl filled">location_on</span>
+              </div>
+            </div>
+          </div>
+          <div id="location-overlay" class="absolute bottom-3 left-3 right-3 bg-surface-container-highest/80 backdrop-blur-xl p-3 rounded-xl hidden">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary">explore</span>
+              <div>
+                <p id="location-coords" class="text-xs font-bold text-on-surface leading-none"></p>
+                <p id="location-name" class="text-[10px] text-on-surface-variant mt-0.5"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setManualLocation('cesanella')" class="location-btn p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/20 text-start transition-all hover:bg-surface-container-low active:scale-95">
+            <p class="font-headline font-bold text-xs">Parco Cesanella</p>
+            <p class="text-[10px] text-on-surface-variant">Senigallia (AN)</p>
+          </button>
+          <button onclick="setManualLocation('cimatico')" class="location-btn p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/20 text-start transition-all hover:bg-surface-container-low active:scale-95">
+            <p class="font-headline font-bold text-xs">Colle Cimatico</p>
+            <p class="text-[10px] text-on-surface-variant">Chiampo (VI)</p>
+          </button>
+        </div>
+      </section>
+
+      <!-- Notes -->
+      <section class="space-y-3">
+        <label class="font-headline font-semibold text-on-surface block" for="field-notes" data-t="rec.notes">Note di Campo</label>
+        <textarea id="field-notes" data-t="rec.notes_placeholder" data-t-attr="placeholder" class="w-full bg-surface-container-lowest border-none rounded-xl p-5 min-h-[120px] text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary/20 transition-all font-body leading-relaxed text-sm" placeholder="Descrivi l'esemplare, il comportamento osservato o l'ambiente circostante..."></textarea>
+      </section>
+
+      <!-- Submit -->
+      <div class="pt-2 pb-4">
+        <button onclick="submitObservation()" class="w-full py-5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-label text-sm font-bold uppercase tracking-[0.1em] shadow-[0_12px_40px_rgba(13,99,27,0.25)] hover:translate-y-[-2px] transition-all duration-300 active:scale-95" data-t="rec.submit">Invia Osservazione</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ======== SCREEN 3: IMPACT ======== -->
+<div id="screen-impact" class="screen">
+  <header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-3xl">
+    <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">menu</span>
+        <h1 class="text-lg font-black text-primary tracking-tighter font-headline">Field Journal</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="flex gap-1 mr-1">
+          <button class="lang-btn text-xs px-1 rounded" data-lang="it" onclick="setLang('it')">🇮🇹</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="en" onclick="setLang('en')">🇬🇧</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="fr" onclick="setLang('fr')">🇫🇷</button>
+          <button class="lang-btn text-xs px-1 rounded" data-lang="es" onclick="setLang('es')">🇪🇸</button>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-sm filled">person</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container-low h-[2px] w-full"></div>
+  </header>
+
+  <main class="pt-20 pb-28 px-5 max-w-lg mx-auto">
+    <div class="space-y-6 fade-in">
+      <!-- Profile -->
+      <section class="flex flex-col items-center text-center space-y-3">
+        <div class="relative">
+          <div class="w-28 h-28 rounded-full p-1 bg-gradient-to-br from-primary to-secondary">
+            <div class="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary" style="font-size:48px;font-variation-settings:'FILL' 1">nature_people</span>
+            </div>
+          </div>
+          <div class="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg">
+            <span class="material-symbols-outlined text-sm filled">verified</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="font-headline font-bold text-2xl tracking-tight" data-t="imp.explorer">Esploratore Naturalista</h2>
+          <p class="font-body text-on-surface-variant text-sm"><span data-t="imp.level">Livello</span> <span id="user-level">1</span> &bull; <span data-t="imp.member">Membro dal 2024</span></p>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="grid grid-cols-2 gap-3">
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10">
+          <span class="material-symbols-outlined text-primary text-2xl mb-1">visibility</span>
+          <p class="text-2xl font-bold font-headline" id="stat-observations">0</p>
+          <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant" data-t="imp.observations">Osservazioni</p>
+        </div>
+        <div class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.06)] border border-outline-variant/10">
+          <span class="material-symbols-outlined text-secondary text-2xl mb-1">potted_plant</span>
+          <p class="text-2xl font-bold font-headline" id="stat-species">0</p>
+          <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant" data-t="imp.species">Specie Trovate</p>
+        </div>
+      </section>
+
+      <!-- Impact Chart -->
+      <section class="space-y-4">
+        <div class="flex justify-between items-end">
+          <h3 class="font-headline font-bold text-xl tracking-tight" data-t="imp.impact">Il Tuo Impatto</h3>
+          <span class="text-primary font-bold text-xs" data-t="guide.label">Progetto ECO</span>
+        </div>
+        <div class="bg-surface-container-low rounded-3xl p-5 relative overflow-hidden">
+          <div class="relative z-10 space-y-3">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant" data-t="imp.monthly">Contributo Mensile</p>
+                <p class="text-lg font-bold" id="impact-trend" data-t="imp.start">Inizia ad esplorare!</p>
+              </div>
+              <span class="material-symbols-outlined text-primary-container text-3xl">trending_up</span>
+            </div>
+            <div class="flex items-end justify-between h-20 gap-1.5 pt-2" id="chart-bars">
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary/20 rounded-t-lg chart-bar" style="height:10%"></div>
+              <div class="w-full bg-primary rounded-t-lg chart-bar" style="height:10%"></div>
+            </div>
+          </div>
+          <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+        </div>
+      </section>
+
+      <!-- Badges -->
+      <section class="space-y-4">
+        <h3 class="font-headline font-bold text-xl tracking-tight" data-t="imp.badges">Badge Ottenuti</h3>
+        <div class="grid grid-cols-3 gap-3" id="badges-grid">
+          <div class="flex flex-col items-center space-y-1.5" id="badge-pioneer">
+            <div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant opacity-40 grayscale">
+              <span class="material-symbols-outlined text-outline-variant text-2xl">eco</span>
+            </div>
+            <span class="font-label text-[10px] text-center uppercase tracking-tighter" data-t="imp.pioneer">Pioniere</span>
+            <span class="text-[9px] text-on-surface-variant">1 <span data-t="imp.obs_singular">osservazione</span></span>
+          </div>
+          <div class="flex flex-col items-center space-y-1.5" id="badge-water">
+            <div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant opacity-40 grayscale">
+              <span class="material-symbols-outlined text-outline-variant text-2xl">water_drop</span>
+            </div>
+            <span class="font-label text-[10px] text-center uppercase tracking-tighter" data-t="imp.water">Custode Idrico</span>
+            <span class="text-[9px] text-on-surface-variant">5 <span data-t="imp.obs_plural">osservazioni</span></span>
+          </div>
+          <div class="flex flex-col items-center space-y-1.5" id="badge-mycologist">
+            <div class="w-14 h-14 rounded-2xl bg-surface-container-highest flex items-center justify-center border-2 border-dashed border-outline-variant opacity-40 grayscale">
+              <span class="material-symbols-outlined text-outline-variant text-2xl">lock</span>
+            </div>
+            <span class="font-label text-[10px] text-center uppercase tracking-tighter" data-t="imp.mycologist">Micologo</span>
+            <span class="text-[9px] text-on-surface-variant">10 <span data-t="imp.obs_plural">osservazioni</span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Next Challenge -->
+      <section class="bg-inverse-surface text-inverse-on-surface rounded-3xl p-5 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col space-y-3">
+          <h4 class="font-headline font-bold text-lg" data-t="imp.next_challenge">Prossima Sfida</h4>
+          <p class="font-body text-sm opacity-80" id="next-challenge-text" data-t="imp.challenge_0">Registra la tua prima osservazione per sbloccare il badge "Pioniere"!</p>
+          <button onclick="navigateTo('screen-record')" class="bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-6 font-label uppercase tracking-widest text-xs font-bold w-fit active:scale-95 transition-transform" data-t="imp.start_now">Inizia Ora</button>
+        </div>
+        <div class="absolute -right-4 -top-4 w-36 h-36 opacity-15">
+          <span class="material-symbols-outlined" style="font-size:144px">psychology_alt</span>
+        </div>
+      </section>
+
+      <!-- Recent -->
+      <section class="space-y-3" id="recent-section" style="display:none">
+        <h3 class="font-headline font-bold text-xl tracking-tight" data-t="imp.recent">Osservazioni Recenti</h3>
+        <div id="observations-list" class="space-y-3"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ======== SCREEN 4: GUIDE ======== -->
+<div id="screen-guide" class="screen">
+  <header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-3xl">
+    <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex items-center gap-4">
+        <button onclick="navigateTo('screen-discovery')" class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">arrow_back</button>
+        <h1 class="font-headline font-bold tracking-tight text-on-surface text-lg" data-t="guide.title">Guida alla Biodiversità</h1>
+      </div>
+    </div>
+    <div class="bg-surface-container-low h-[2px] w-full"></div>
+  </header>
+
+  <main class="pt-20 pb-28 px-5 max-w-lg mx-auto">
+    <div class="space-y-6 fade-in">
+      <section class="space-y-2">
+        <p class="font-label text-[11px] font-medium uppercase tracking-widest text-primary" data-t="guide.label">Progetto ECO</p>
+        <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface" data-t="guide.main_title">Guida Galattica alla Biodiversità</h2>
+        <p class="text-on-surface-variant text-sm leading-relaxed" data-t="guide.main_desc">Percorsi e strategie per comprendere e salvaguardare la biodiversità.</p>
+      </section>
+
+      <section class="space-y-3">
+        <h3 class="font-headline font-bold text-lg" data-t="guide.sheets">Schede Didattiche</h3>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg filled">forest</span> <span data-t="guide.eco_title">Ecosistema del Parco</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.eco_text"></div>
+        </details>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-tertiary text-lg">emoji_nature</span> <span data-t="guide.poll_title">Impollinatori e Apicoltura</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.poll_text"></div>
+        </details>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">water_drop</span> <span data-t="guide.water_title">Risorse Idriche</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.water_text"></div>
+        </details>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary-container text-lg filled">nature</span> <span data-t="guide.reforest_title">Riforestazione Urbana</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.reforest_text"></div>
+        </details>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-lg">groups</span> <span data-t="guide.cop_title">Comunità di Pratica</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.cop_text"></div>
+        </details>
+
+        <details class="bg-surface-container-lowest leaf-shape p-5 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10 group">
+          <summary class="font-headline font-bold text-sm cursor-pointer flex items-center justify-between">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">science</span> <span data-t="guide.howto_title">Come Fare Citizen Science</span></span>
+            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div class="mt-3 text-sm text-on-surface-variant leading-relaxed space-y-2" data-t="guide.howto_text"></div>
+        </details>
+      </section>
+
+      <!-- Partners -->
+      <section class="space-y-3">
+        <h3 class="font-headline font-bold text-lg" data-t="guide.partners">Partner del Progetto</h3>
+        <div class="bg-surface-container-low rounded-2xl p-5 space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary filled">location_city</span>
+            <div>
+              <p class="font-headline font-bold text-xs" data-t="guide.municipalities">Comuni</p>
+              <p class="text-[11px] text-on-surface-variant">Senigallia (AN) &bull; Chiampo (VI)</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-secondary filled">school</span>
+            <div>
+              <p class="font-headline font-bold text-xs" data-t="guide.education">Educazione Ambientale</p>
+              <p class="text-[11px] text-on-surface-variant">Associazione Next &bull; Gruppo Pleiadi &bull; Univ. Camerino</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-tertiary filled">volunteer_activism</span>
+            <div>
+              <p class="font-headline font-bold text-xs" data-t="guide.community">Comunità</p>
+              <p class="text-[11px] text-on-surface-variant">Caritas Senigallia &bull; Scatola Cultura ONLUS &bull; Isfid Prisma</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ======== BOTTOM NAV ======== -->
+<nav id="bottom-nav" class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-3 bg-surface/70 backdrop-blur-3xl z-50 rounded-t-[2rem] shadow-[0_-12px_40px_rgba(7,30,39,0.06)]" style="display:none">
+  <a id="nav-discovery" class="nav-item flex flex-col items-center justify-center px-5 py-2 transition-all cursor-pointer" onclick="navigateTo('screen-discovery')">
+    <span class="material-symbols-outlined mb-0.5">explore</span>
+    <span class="font-label text-[10px] font-medium uppercase tracking-widest" data-t="nav.discovery">Discovery</span>
+  </a>
+  <a id="nav-impact" class="nav-item flex flex-col items-center justify-center px-5 py-2 transition-all cursor-pointer" onclick="navigateTo('screen-impact')">
+    <span class="material-symbols-outlined mb-0.5">analytics</span>
+    <span class="font-label text-[10px] font-medium uppercase tracking-widest" data-t="nav.impact">Impact</span>
+  </a>
+  <a id="nav-record" class="nav-item flex flex-col items-center justify-center px-5 py-2 transition-all cursor-pointer" onclick="navigateTo('screen-record')">
+    <span class="material-symbols-outlined mb-0.5">add_circle</span>
+    <span class="font-label text-[10px] font-medium uppercase tracking-widest" data-t="nav.record">Record</span>
+  </a>
+</nav>
+
+<!-- Toast -->
+<div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] hidden">
+  <div class="glass-panel px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary filled" id="toast-icon">check_circle</span>
+    <span class="font-body text-sm font-medium" id="toast-text"></span>
+  </div>
+</div>
+
+<script>
+// =============================================
+// STATE
+// =============================================
+const STATE_KEY = 'citizen-science-explorer';
+let state = loadState();
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STATE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return { onboarded: false, observations: [], species: [], currentScreen: 'screen-onboarding' };
+}
+
+function saveState() {
+  const toSave = { ...state, species: [...(state.species instanceof Set ? state.species : state.species || [])] };
+  localStorage.setItem(STATE_KEY, JSON.stringify(toSave));
+}
+
+if (Array.isArray(state.species)) state.species = new Set(state.species);
+else state.species = new Set();
+
+// =============================================
+// NAVIGATION
+// =============================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+}
+
+function navigateTo(id) {
+  showScreen(id);
+  state.currentScreen = id;
+  const nav = document.getElementById('bottom-nav');
+  nav.style.display = id === 'screen-onboarding' ? 'none' : 'flex';
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('bg-gradient-to-br','from-primary','to-primary-container','text-white','rounded-2xl','translate-y-[-2px]');
+    item.classList.add('text-on-surface-variant');
+    item.querySelector('.material-symbols-outlined').classList.remove('filled');
+  });
+  const activeNav = document.getElementById('nav-' + id.replace('screen-', ''));
+  if (activeNav) {
+    activeNav.classList.remove('text-on-surface-variant');
+    activeNav.classList.add('bg-gradient-to-br','from-primary','to-primary-container','text-white','rounded-2xl','translate-y-[-2px]');
+    activeNav.querySelector('.material-symbols-outlined').classList.add('filled');
+  }
+  if (id === 'screen-impact') updateImpactScreen();
+  saveState();
+}
+
+function startExploring() {
+  state.onboarded = true;
+  saveState();
+  navigateTo('screen-discovery');
+}
+
+// =============================================
+// RECORD
+// =============================================
+let selectedObsType = 'flora';
+let selectedLocation = null;
+let photoData = null;
+
+function selectObsType(btn) {
+  document.querySelectorAll('.obs-type-btn').forEach(b => {
+    b.classList.remove('bg-primary/10','border-primary/30');
+    b.classList.add('bg-surface-container-lowest','border-outline-variant/20');
+    b.querySelector('.material-symbols-outlined').classList.remove('text-primary','filled');
+    b.querySelector('.material-symbols-outlined').classList.add('text-on-surface-variant');
+    b.querySelector('span:last-child').classList.remove('text-primary');
+    b.querySelector('span:last-child').classList.add('text-on-surface-variant');
+  });
+  btn.classList.remove('bg-surface-container-lowest','border-outline-variant/20');
+  btn.classList.add('bg-primary/10','border-primary/30');
+  btn.querySelector('.material-symbols-outlined').classList.remove('text-on-surface-variant');
+  btn.querySelector('.material-symbols-outlined').classList.add('text-primary','filled');
+  btn.querySelector('span:last-child').classList.remove('text-on-surface-variant');
+  btn.querySelector('span:last-child').classList.add('text-primary');
+  selectedObsType = btn.dataset.type;
+}
+
+function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    photoData = e.target.result;
+    document.getElementById('photo-img').src = photoData;
+    document.getElementById('photo-preview').classList.remove('hidden');
+    showToast(t('toast.photo_added'), 'photo_camera');
+  };
+  reader.readAsDataURL(file);
+}
+
+function getLocation() {
+  if (!navigator.geolocation) { showToast(t('toast.no_geo'), 'error'); return; }
+  showToast(t('toast.detecting'), 'my_location');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      selectedLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: 'GPS' };
+      document.getElementById('location-placeholder').classList.add('hidden');
+      document.getElementById('location-found').classList.remove('hidden');
+      document.getElementById('location-overlay').classList.remove('hidden');
+      document.getElementById('location-coords').textContent = `${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° E`;
+      document.getElementById('location-name').textContent = t('toast.gps_detected');
+      showToast(t('toast.located'), 'location_on');
+    },
+    () => { showToast(t('toast.no_location'), 'location_off'); },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function setManualLocation(loc) {
+  const locs = {
+    cesanella: { lat: 43.7176, lon: 13.2226, name: 'Parco della Cesanella, Senigallia' },
+    cimatico: { lat: 45.5520, lon: 11.2889, name: 'Colle Cimatico, Chiampo' }
+  };
+  selectedLocation = locs[loc];
+  document.getElementById('location-placeholder').classList.add('hidden');
+  document.getElementById('location-found').classList.remove('hidden');
+  document.getElementById('location-overlay').classList.remove('hidden');
+  document.getElementById('location-coords').textContent = `${selectedLocation.lat.toFixed(4)}° N, ${selectedLocation.lon.toFixed(4)}° E`;
+  document.getElementById('location-name').textContent = selectedLocation.name;
+  document.querySelectorAll('.location-btn').forEach(b => { b.classList.remove('border-primary','bg-primary/5'); b.classList.add('border-outline-variant/20'); });
+  event.currentTarget.classList.remove('border-outline-variant/20');
+  event.currentTarget.classList.add('border-primary','bg-primary/5');
+}
+
+function submitObservation() {
+  const notes = document.getElementById('field-notes').value.trim();
+  const speciesName = document.getElementById('species-input').value.trim();
+  if (!notes && !photoData) { showToast(t('toast.add_data'), 'warning'); return; }
+
+  state.observations.push({
+    id: Date.now(), type: selectedObsType, species: speciesName,
+    notes, location: selectedLocation, hasPhoto: !!photoData, date: new Date().toISOString()
+  });
+  if (speciesName) state.species.add(speciesName.toLowerCase());
+  saveState();
+
+  document.getElementById('field-notes').value = '';
+  document.getElementById('species-input').value = '';
+  document.getElementById('photo-preview').classList.add('hidden');
+  photoData = null; selectedLocation = null;
+  document.getElementById('location-placeholder').classList.remove('hidden');
+  document.getElementById('location-found').classList.add('hidden');
+  document.getElementById('location-overlay').classList.add('hidden');
+  showToast(t('toast.submitted'), 'check_circle');
+  setTimeout(() => navigateTo('screen-impact'), 800);
+}
+
+// =============================================
+// IMPACT
+// =============================================
+function updateImpactScreen() {
+  const obs = state.observations;
+  const count = obs.length;
+  document.getElementById('stat-observations').textContent = count;
+  document.getElementById('stat-species').textContent = state.species.size;
+  document.getElementById('user-level').textContent = Math.min(Math.floor(count / 3) + 1, 20);
+
+  const trend = document.getElementById('impact-trend');
+  if (count === 0) trend.textContent = t('imp.start');
+  else if (count < 5) trend.textContent = `${count} ${count === 1 ? t('imp.obs_singular') : t('imp.obs_plural')} ${count === 1 ? t('imp.registered') : t('imp.registered_plural')}`;
+  else trend.textContent = `+${count} ${t('imp.total')}`;
+
+  const bars = document.querySelectorAll('.chart-bar');
+  const wd = [0,0,0,0,0,0,0];
+  obs.forEach(o => { wd[new Date(o.date).getDay()]++; });
+  const mx = Math.max(...wd, 1);
+  bars.forEach((bar, i) => {
+    bar.style.height = Math.max(10, (wd[i] / mx) * 100) + '%';
+    if (i === bars.length - 1 && count > 0) { bar.classList.remove('bg-primary/20'); bar.classList.add('bg-primary'); }
+  });
+
+  updateBadge('badge-pioneer', count >= 1, 'eco', 'tertiary-fixed', 'tertiary-container');
+  updateBadge('badge-water', count >= 5, 'water_drop', 'secondary-fixed', 'on-secondary-fixed-variant');
+  updateBadge('badge-mycologist', count >= 10, 'emoji_nature', 'primary-fixed', 'on-primary-fixed-variant');
+
+  const ct = document.getElementById('next-challenge-text');
+  if (count === 0) ct.textContent = t('imp.challenge_0');
+  else if (count < 5) ct.textContent = `${5 - count} ${(5 - count) === 1 ? t('imp.obs_singular') : t('imp.obs_plural')} ${t('imp.challenge_5')}`;
+  else if (count < 10) ct.textContent = `${10 - count} ${(10 - count) === 1 ? t('imp.obs_singular') : t('imp.obs_plural')} ${t('imp.challenge_10')}`;
+  else ct.textContent = t('imp.challenge_done');
+
+  const recentSection = document.getElementById('recent-section');
+  const list = document.getElementById('observations-list');
+  if (count > 0) {
+    recentSection.style.display = 'block';
+    list.innerHTML = '';
+    const typeIcons = { flora:'park', fauna:'pets', habitat:'landscape' };
+    [...obs].reverse().slice(0, 10).forEach(o => {
+      const d = new Date(o.date).toLocaleDateString(currentLang === 'en' ? 'en-GB' : currentLang, { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const card = document.createElement('div');
+      card.className = 'bg-surface-container-lowest leaf-shape p-4 shadow-[0_12px_40px_rgba(7,30,39,0.04)] border border-outline-variant/10';
+      card.innerHTML = `<div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary filled">${typeIcons[o.type]||'eco'}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="font-headline font-bold text-xs">${t('rec.' + o.type)}${o.species ? ': ' + esc(o.species) : ''}</span>
+            <span class="text-[10px] text-on-surface-variant flex-shrink-0">${d}</span>
+          </div>
+          <p class="text-xs text-on-surface-variant truncate">${esc(o.notes || t('imp.no_notes'))}</p>
+          ${o.location ? `<p class="text-[10px] text-primary mt-1 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">location_on</span>${esc(o.location.name||'GPS')}</p>` : ''}
+        </div>
+      </div>`;
+      list.appendChild(card);
+    });
+  } else recentSection.style.display = 'none';
+}
+
+function updateBadge(id, unlocked, icon, bgColor, textColor) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const c = el.querySelector('div');
+  const ic = c.querySelector('.material-symbols-outlined');
+  if (unlocked) {
+    c.className = `w-14 h-14 rounded-2xl bg-${bgColor} flex items-center justify-center shadow-inner`;
+    ic.className = `material-symbols-outlined text-${textColor} text-2xl filled`;
+    el.classList.remove('opacity-40','grayscale');
+  }
+}
+
+// =============================================
+// UTILS
+// =============================================
+function showToast(text, icon) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  document.getElementById('toast-icon').textContent = icon || 'check_circle';
+  toast.classList.remove('hidden');
+  toast.querySelector('div').className = 'glass-panel px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 toast';
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+function esc(text) { const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
+
+// Override setLang to also update impact screen
+const _origSetLang = setLang;
+setLang = function(lang) {
+  _origSetLang(lang);
+  if (state.currentScreen === 'screen-impact') updateImpactScreen();
+  showToast(t('toast.lang_changed'), 'translate');
+};
+
+// =============================================
+// INIT
+// =============================================
+applyTranslations();
+if (state.onboarded) {
+  navigateTo(state.currentScreen === 'screen-onboarding' ? 'screen-discovery' : state.currentScreen);
+} else {
+  navigateTo('screen-onboarding');
+}
+</script>
+</body>
+</html>
