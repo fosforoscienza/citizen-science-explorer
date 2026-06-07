@@ -11,6 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
 <link rel="manifest" href="manifest.json" />
 <script src="lang.js"></script>
+<script src="leafkey.js" defer></script>
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -377,6 +378,27 @@ tailwind.config = {
         </div>
       </section>
 
+      <!-- Quiz delle Foglie -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 mt-2">
+          <span class="material-symbols-outlined text-primary text-lg filled">forest</span>
+          <h3 class="font-headline font-bold text-lg" data-t="disc.leafkey_section">Identifica Off-line</h3>
+        </div>
+        <button onclick="navigateTo('screen-leafkey')" class="w-full text-left bg-gradient-to-br from-primary/15 to-secondary/10 leaf-shape p-5 shadow-[0_12px_40px_rgba(13,99,27,0.1)] border-2 border-primary/20 hover:border-primary/40 active:scale-[0.98] transition-all relative overflow-hidden">
+          <div class="relative z-10 flex items-center gap-4">
+            <div class="shrink-0 w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary text-3xl filled">eco</span>
+            </div>
+            <div class="flex-1">
+              <p class="font-label text-[10px] uppercase tracking-widest text-primary font-bold mb-1" data-t="disc.leafkey_tag">Quiz Didattico</p>
+              <h4 class="font-headline font-bold text-base leading-snug mb-1" data-t="disc.leafkey_title">Quiz delle Foglie</h4>
+              <p class="text-xs text-on-surface-variant leading-relaxed" data-t="disc.leafkey_desc">Identifica la foglia con un percorso guidato di domande. Funziona anche senza connessione.</p>
+            </div>
+            <span class="material-symbols-outlined text-primary">chevron_right</span>
+          </div>
+        </button>
+      </section>
+
       <!-- Guida -->
       <section class="bg-inverse-surface text-inverse-on-surface rounded-3xl p-6 relative overflow-hidden">
         <div class="relative z-10 flex flex-col space-y-3">
@@ -459,6 +481,46 @@ tailwind.config = {
             <span class="material-symbols-outlined text-4xl text-outline-variant mb-2">upload_file</span>
             <span class="font-label text-sm font-semibold text-on-surface-variant" data-t="rec.upload">Carica File</span>
           </label>
+        </div>
+      </section>
+
+      <!-- AI Identification (Pl@ntNet) — visible only for flora -->
+      <section id="ai-section" class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-xl filled">auto_awesome</span>
+          <label class="font-headline font-semibold text-on-surface" data-t="rec.ai_section">Identificazione AI</label>
+        </div>
+        <div class="space-y-3">
+          <p class="font-label text-[11px] font-medium uppercase tracking-widest text-on-surface-variant" data-t="rec.ai_organ_label">Cosa hai fotografato?</p>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button type="button" class="ai-organ-btn active flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-primary/10 border border-primary/30 transition-all" data-organ="auto" onclick="selectOrgan(this)">
+              <span class="material-symbols-outlined text-primary text-base">auto_fix</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-primary" data-t="rec.ai_organ_auto">Auto</span>
+            </button>
+            <button type="button" class="ai-organ-btn flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-surface-container-lowest border border-outline-variant/20 transition-all" data-organ="leaf" onclick="selectOrgan(this)">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">eco</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.ai_organ_leaf">Foglia</span>
+            </button>
+            <button type="button" class="ai-organ-btn flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-surface-container-lowest border border-outline-variant/20 transition-all" data-organ="flower" onclick="selectOrgan(this)">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">local_florist</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.ai_organ_flower">Fiore</span>
+            </button>
+            <button type="button" class="ai-organ-btn flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-surface-container-lowest border border-outline-variant/20 transition-all" data-organ="fruit" onclick="selectOrgan(this)">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">nutrition</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.ai_organ_fruit">Frutto</span>
+            </button>
+            <button type="button" class="ai-organ-btn flex flex-col items-center gap-1 py-2 px-1 rounded-lg bg-surface-container-lowest border border-outline-variant/20 transition-all" data-organ="bark" onclick="selectOrgan(this)">
+              <span class="material-symbols-outlined text-on-surface-variant text-base">forest</span>
+              <span class="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant" data-t="rec.ai_organ_bark">Corteccia</span>
+            </button>
+          </div>
+          <button type="button" id="btn-ai-identify" onclick="identifyPlant()" disabled
+            class="w-full py-3.5 bg-gradient-to-br from-secondary to-primary-container text-white rounded-xl font-label text-xs font-bold uppercase tracking-[0.1em] shadow-[0_8px_24px_rgba(0,98,158,0.18)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none">
+            <span class="material-symbols-outlined text-base filled">photo_camera_back</span>
+            <span data-t="rec.ai_identify">Identifica con Pl@ntNet</span>
+          </button>
+          <p id="ai-disabled-hint" class="text-[11px] text-on-surface-variant text-center italic" data-t="rec.ai_disabled_hint">Scatta o carica una foto per attivare l'identificazione</p>
+          <div id="ai-results" class="hidden space-y-2"></div>
         </div>
       </section>
 
@@ -772,6 +834,24 @@ tailwind.config = {
   </main>
 </div>
 
+<!-- ======== SCREEN 5: LEAF KEY (Quiz Foglie) ======== -->
+<div id="screen-leafkey" class="screen">
+  <header class="fixed top-0 w-full z-50 bg-surface/70 backdrop-blur-3xl">
+    <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex items-center gap-4">
+        <button onclick="navigateTo('screen-discovery')" class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">arrow_back</button>
+        <h1 class="font-headline font-bold tracking-tight text-on-surface text-xl" data-t="lk.title">Quiz delle Foglie</h1>
+      </div>
+      <span class="text-sm font-extrabold text-primary tracking-tight font-headline leading-tight">Citizen Science Explorer</span>
+    </div>
+    <div id="lk-breadcrumb" class="px-6 pb-2 text-[10px] font-label uppercase tracking-widest text-on-surface-variant truncate"></div>
+    <div class="bg-surface-container-low h-[2px] w-full"></div>
+  </header>
+  <main class="pt-24 pb-28 px-5 max-w-lg mx-auto observation-shell">
+    <div id="lk-container" class="fade-in space-y-6"></div>
+  </main>
+</div>
+
 <!-- ======== BOTTOM NAV ======== -->
 <nav id="bottom-nav" class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-8 pt-3 bg-surface/70 backdrop-blur-3xl z-50 rounded-t-[2rem] shadow-[0_-12px_40px_rgba(7,30,39,0.06)]" style="display:none">
   <a id="nav-discovery" class="nav-item flex flex-col items-center justify-center px-5 py-2 transition-all cursor-pointer" onclick="navigateTo('screen-discovery')">
@@ -846,6 +926,7 @@ function navigateTo(id) {
     activeNav.querySelector('.material-symbols-outlined').classList.add('filled');
   }
   if (id === 'screen-impact') updateImpactScreen();
+  if (id === 'screen-leafkey' && typeof startLeafKey === 'function') startLeafKey();
   saveState();
 }
 
@@ -908,6 +989,8 @@ function selectObsType(btn) {
   btn.querySelector('span:last-child').classList.remove('text-on-surface-variant');
   btn.querySelector('span:last-child').classList.add('text-primary');
   selectedObsType = btn.dataset.type;
+  const aiSection = document.getElementById('ai-section');
+  if (aiSection) aiSection.style.display = selectedObsType === 'flora' ? '' : 'none';
 }
 
 function handlePhoto(event) {
@@ -918,6 +1001,12 @@ function handlePhoto(event) {
     photoData = e.target.result;
     document.getElementById('photo-img').src = photoData;
     document.getElementById('photo-preview').classList.remove('hidden');
+    const btn = document.getElementById('btn-ai-identify');
+    if (btn) btn.disabled = false;
+    const hint = document.getElementById('ai-disabled-hint');
+    if (hint) hint.style.display = 'none';
+    const results = document.getElementById('ai-results');
+    if (results) { results.classList.add('hidden'); results.innerHTML = ''; }
     showToast(t('toast.photo_added'), 'photo_camera');
   };
   reader.readAsDataURL(file);
@@ -976,8 +1065,135 @@ function submitObservation() {
   document.getElementById('location-placeholder').classList.remove('hidden');
   document.getElementById('location-found').classList.add('hidden');
   document.getElementById('location-overlay').classList.add('hidden');
+  resetAIState();
   showToast(t('toast.submitted'), 'check_circle');
   setTimeout(() => navigateTo('screen-impact'), 800);
+}
+
+// =============================================
+// AI IDENTIFICATION (Pl@ntNet via Cloudflare Worker proxy)
+// =============================================
+// Pl@ntNet non permette chiamate dirette dal browser (CORS bloccato).
+// Per attivare l'identificazione: deploya il file worker.js su Cloudflare Workers
+// (istruzioni passo-passo nel file stesso), poi incolla qui sotto l'URL del worker.
+// Esempio: https://plantnet-proxy.tuonome.workers.dev
+const PLANTNET_PROXY_URL = 'https://plantnet-proxy.fosforoscienza-app.workers.dev';
+let selectedOrgan = 'auto';
+
+function selectOrgan(btn) {
+  document.querySelectorAll('.ai-organ-btn').forEach(b => {
+    b.classList.remove('bg-primary/10','border-primary/30','active');
+    b.classList.add('bg-surface-container-lowest','border-outline-variant/20');
+    b.querySelector('.material-symbols-outlined').classList.remove('text-primary');
+    b.querySelector('.material-symbols-outlined').classList.add('text-on-surface-variant');
+    b.querySelector('span:last-child').classList.remove('text-primary');
+    b.querySelector('span:last-child').classList.add('text-on-surface-variant');
+  });
+  btn.classList.remove('bg-surface-container-lowest','border-outline-variant/20');
+  btn.classList.add('bg-primary/10','border-primary/30','active');
+  btn.querySelector('.material-symbols-outlined').classList.remove('text-on-surface-variant');
+  btn.querySelector('.material-symbols-outlined').classList.add('text-primary');
+  btn.querySelector('span:last-child').classList.remove('text-on-surface-variant');
+  btn.querySelector('span:last-child').classList.add('text-primary');
+  selectedOrgan = btn.dataset.organ;
+}
+
+async function identifyPlant() {
+  if (!photoData) return;
+  if (!PLANTNET_PROXY_URL || PLANTNET_PROXY_URL.startsWith('__')) {
+    showToast(t('toast.ai_no_key'), 'key_off');
+    return;
+  }
+  const btn = document.getElementById('btn-ai-identify');
+  const results = document.getElementById('ai-results');
+  btn.disabled = true;
+  results.classList.remove('hidden');
+  results.innerHTML = `
+    <div class="flex items-center justify-center gap-2 py-4 text-on-surface-variant">
+      <span class="material-symbols-outlined animate-spin">progress_activity</span>
+      <span class="text-sm font-medium">${t('rec.ai_identifying')}</span>
+    </div>`;
+
+  try {
+    const blob = await fetch(photoData).then(r => r.blob());
+    const form = new FormData();
+    form.append('images', blob, 'observation.jpg');
+    if (selectedOrgan !== 'auto') form.append('organs', selectedOrgan);
+    const url = `${PLANTNET_PROXY_URL}?nb-results=3&lang=${currentLang}`;
+    const res = await fetch(url, { method: 'POST', body: form });
+    if (res.status === 429) { results.classList.add('hidden'); showToast(t('toast.ai_limit'), 'hourglass_disabled'); return; }
+    if (res.status === 401 || res.status === 403) { results.classList.add('hidden'); showToast(t('toast.ai_no_key'), 'key_off'); return; }
+    if (res.status === 404) { results.classList.add('hidden'); showToast(t('toast.ai_no_match'), 'search_off'); return; }
+    if (!res.ok) { results.classList.add('hidden'); showToast(t('toast.ai_error'), 'error'); return; }
+    const data = await res.json();
+    const items = (data.results || []).slice(0, 3);
+    if (items.length === 0) { results.classList.add('hidden'); showToast(t('toast.ai_no_match'), 'search_off'); return; }
+    renderAIResults(items);
+  } catch (err) {
+    console.error('Pl@ntNet error', err);
+    results.classList.add('hidden');
+    showToast(t('toast.ai_error'), 'error');
+  } finally {
+    if (photoData) btn.disabled = false;
+  }
+}
+
+function renderAIResults(items) {
+  const results = document.getElementById('ai-results');
+  const header = `
+    <div class="flex items-center gap-2 pt-2 pb-1">
+      <span class="material-symbols-outlined text-primary text-base filled">auto_awesome</span>
+      <p class="font-label text-[11px] font-bold uppercase tracking-widest text-primary">${t('rec.ai_results_title')}</p>
+    </div>`;
+  const cards = items.map(item => {
+    const sci = (item.species && item.species.scientificNameWithoutAuthor) || '—';
+    const common = (item.species && item.species.commonNames && item.species.commonNames[0]) || t('rec.ai_no_common');
+    const score = Math.round((item.score || 0) * 100);
+    const safeSci = sci.replace(/'/g, "\\'");
+    return `
+      <button type="button" onclick="acceptIdentification('${safeSci}')"
+        class="w-full text-left bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-3 hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center gap-3">
+        <div class="flex-1 min-w-0">
+          <p class="font-headline font-bold text-sm text-on-surface truncate italic">${sci}</p>
+          <p class="text-[11px] text-on-surface-variant truncate">${common}</p>
+        </div>
+        <div class="flex flex-col items-end shrink-0">
+          <span class="text-[10px] font-bold uppercase tracking-wider ${score >= 50 ? 'text-primary' : 'text-on-surface-variant'}">${score}%</span>
+          <span class="material-symbols-outlined text-primary text-base">chevron_right</span>
+        </div>
+      </button>`;
+  }).join('');
+  results.innerHTML = header + cards;
+}
+
+function acceptIdentification(scientificName) {
+  document.getElementById('species-input').value = scientificName;
+  document.getElementById('ai-results').classList.add('hidden');
+  showToast(t('toast.ai_accepted'), 'check_circle');
+}
+
+function resetAIState() {
+  selectedOrgan = 'auto';
+  document.querySelectorAll('.ai-organ-btn').forEach(b => {
+    const isAuto = b.dataset.organ === 'auto';
+    b.classList.toggle('bg-primary/10', isAuto);
+    b.classList.toggle('border-primary/30', isAuto);
+    b.classList.toggle('active', isAuto);
+    b.classList.toggle('bg-surface-container-lowest', !isAuto);
+    b.classList.toggle('border-outline-variant/20', !isAuto);
+    const icon = b.querySelector('.material-symbols-outlined');
+    icon.classList.toggle('text-primary', isAuto);
+    icon.classList.toggle('text-on-surface-variant', !isAuto);
+    const label = b.querySelector('span:last-child');
+    label.classList.toggle('text-primary', isAuto);
+    label.classList.toggle('text-on-surface-variant', !isAuto);
+  });
+  const btn = document.getElementById('btn-ai-identify');
+  if (btn) btn.disabled = true;
+  const hint = document.getElementById('ai-disabled-hint');
+  if (hint) hint.style.display = '';
+  const results = document.getElementById('ai-results');
+  if (results) { results.classList.add('hidden'); results.innerHTML = ''; }
 }
 
 // =============================================

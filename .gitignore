@@ -1,0 +1,13 @@
+# Wrangler (Cloudflare Workers) — build cache, local state, secrets sessione
+.wrangler/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

@@ -1,0 +1,12 @@
+name = "plantnet-proxy"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+# La chiave PLANTNET_KEY si imposta come secret (cifrata) con:
+#   npx wrangler secret put PLANTNET_KEY
+# Non va MAI scritta qui in chiaro.
+
+[vars]
+# Lista (separata da virgola) dei domini autorizzati a chiamare il worker.
+# "*" = qualsiasi origine (utile per test). Per produzione, restringi al tuo dominio.
+ALLOWED_ORIGINS = "*"
